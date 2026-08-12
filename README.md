@@ -83,6 +83,13 @@ Register Apple's Vision tools with the session so the model can act on images:
 - **`OCRTool`** — extract text from attached images
 - **`BarcodeReaderTool`** — decode barcodes and QR codes
 
+### ☁️ iCloud sync
+Everything you create follows you between devices:
+- **Chats, agents, skills, and knowledge files** sync via **SwiftData + CloudKit**
+- **Settings** (temperature, sampling, instructions, toggles) sync via **`NSUbiquitousKeyValueStore`** — plain `UserDefaults` doesn't sync on its own
+- Live iCloud status shown in Settings
+- Signed out of iCloud? The app **falls back to local-only storage** rather than failing to launch
+
 ### ☁️ Private Cloud Compute (optional)
 - One-toggle switch to route requests to Apple's server-side model (**32K context** vs 4,096 on-device)
 - Full error handling for network failure, quota limits, and service outages
@@ -171,7 +178,15 @@ git config core.hooksPath .githooks
 
 This blocks any commit that would leak a Team ID.
 
-**3. Choose an Apple Intelligence–capable device and run** (⌘R).
+**3. Enable iCloud sync** (optional). In *Signing & Capabilities* add:
+- **iCloud** → check **CloudKit** → create the container `iCloud.<your.bundle.id>` → also check **Key-value storage** (settings sync)
+- **Background Modes** → check **Remote notifications**
+
+Then update `containerIdentifier` in `Models/CloudKitSchema.swift` to match your container. Without these, the app runs local-only — nothing breaks.
+
+**4. Choose an Apple Intelligence–capable device and run** (⌘R).
+
+> **Publishing the CloudKit schema.** CloudKit schemas are *additive only* and can't be changed after promotion to production. To publish, add the launch argument `-InitializeCloudKitSchema` (Scheme → Run → Arguments), run once in DEBUG, remove it, then promote the schema at [icloud.developer.apple.com](https://icloud.developer.apple.com).
 
 On first launch the app seeds two agents, two skills, and two knowledge files so every feature is immediately explorable.
 
@@ -201,11 +216,11 @@ Findings worth knowing if you're building on Foundation Models:
 
 ## Roadmap
 
+- [x] iCloud sync for conversations, agents, skills, knowledge, and settings
 - [ ] Quota status UI for PCC (approaching / reached, with iCloud+ upgrade path)
 - [ ] Live token-usage meter against the context window
 - [ ] Cancel an in-flight response
 - [ ] PDF text extraction for attachments
-- [ ] iCloud sync for conversations, agents, and skills
 
 ---
 

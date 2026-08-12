@@ -36,6 +36,11 @@ struct MyAIApp: App {
             cloudKitDatabase: .automatic
         )
 
+        #if DEBUG
+        // Opt-in, one-time publish of the schema to CloudKit's dev environment.
+        CloudKitSchema.initializeIfRequested(schema: schema)
+        #endif
+
         do {
             let container = try ModelContainer(for: schema, configurations: [cloudConfiguration])
             SampleData.seedIfNeeded(container.mainContext)
