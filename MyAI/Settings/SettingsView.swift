@@ -11,6 +11,7 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(LLMEngine.self) private var engine
+    @Environment(SettingsStore.self) private var settings
 
     @Query private var knowledge: [KnowledgeFile]
     @Query private var agents: [Agent]
@@ -47,6 +48,25 @@ struct SettingsView: View {
                     } label: {
                         settingRow("Skills", systemImage: "wand.and.stars", count: skills.count)
                     }
+                }
+
+                Section {
+                    HStack(spacing: 12) {
+                        Image(systemName: settings.isCloudSyncAvailable ? "icloud.fill" : "icloud.slash")
+                            .foregroundStyle(settings.isCloudSyncAvailable ? .blue : .secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(settings.isCloudSyncAvailable ? "Syncing with iCloud" : "iCloud unavailable")
+                                .font(.subheadline.weight(.medium))
+                            Text(settings.isCloudSyncAvailable
+                                 ? "Chats, agents, skills, knowledge, and settings stay in sync across your devices."
+                                 : "Sign in to iCloud in Settings to sync your chats, agents, skills, knowledge, and settings.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                } header: {
+                    Text("iCloud")
                 }
 
                 Section {

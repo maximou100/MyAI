@@ -147,7 +147,7 @@ struct ChatHomeView: View {
     private func newConversation() {
         // Reuse the current chat if it's still empty instead of piling up blank
         // conversations in History.
-        if current?.messages.isEmpty == true {
+        if current?.isEmpty == true {
             current?.updatedAt = .now
         } else {
             current = makeConversation()
@@ -230,7 +230,7 @@ private struct ChatThread: View {
                         banner(unavailableMessage, systemImage: "exclamationmark.triangle", tint: .orange)
                     }
 
-                    if conversation.messages.isEmpty {
+                    if conversation.isEmpty {
                         emptyState
                             .padding(.top, 60)
                     }
@@ -253,7 +253,7 @@ private struct ChatThread: View {
             .scrollDismissesKeyboard(.immediately)
             .contentShape(Rectangle())
             .onTapGesture(perform: onDismissKeyboard)
-            .onChange(of: conversation.messages.count) { _, _ in scrollToBottom(proxy) }
+            .onChange(of: conversation.messageCount) { _, _ in scrollToBottom(proxy) }
             .onChange(of: lastMessageText) { _, _ in scrollToBottom(proxy) }
             .onAppear { scrollToBottom(proxy) }
         }

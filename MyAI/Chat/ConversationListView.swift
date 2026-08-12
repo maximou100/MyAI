@@ -20,7 +20,7 @@ struct ConversationListView: View {
 
     /// Empty chats aren't worth listing — they carry no content to return to.
     private var conversations: [Conversation] {
-        allConversations.filter { !$0.messages.isEmpty }
+        allConversations.filter { !$0.isEmpty }
     }
 
     var body: some View {
@@ -38,7 +38,7 @@ struct ConversationListView: View {
                                 .lineLimit(1)
                                 .foregroundStyle(.primary)
                             HStack {
-                                Text("^[\(conversation.messages.count) message](inflect: true)")
+                                Text("^[\(conversation.messageCount) message](inflect: true)")
                                 Spacer()
                                 Text(conversation.updatedAt, format: .relative(presentation: .named))
                             }

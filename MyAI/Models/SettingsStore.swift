@@ -56,80 +56,83 @@ final class SettingsStore {
 
     /// Creativity of the model, 0 (precise) ... 1 (creative).
     var temperature: Double {
-        didSet { defaults.set(temperature, forKey: Keys.temperature) }
+        didSet { persist(temperature, forKey: Keys.temperature) }
     }
 
     /// Upper bound on response length. 0 means "no explicit limit".
     var maximumResponseTokens: Int {
-        didSet { defaults.set(maximumResponseTokens, forKey: Keys.maxTokens) }
+        didSet { persist(maximumResponseTokens, forKey: Keys.maxTokens) }
     }
 
     /// The default system instructions used when no agent is selected.
     var globalInstructions: String {
-        didSet { defaults.set(globalInstructions, forKey: Keys.instructions) }
+        didSet { persist(globalInstructions, forKey: Keys.instructions) }
     }
 
     /// The currently selected agent id, or empty for the default assistant.
     var selectedAgentID: String {
-        didSet { defaults.set(selectedAgentID, forKey: Keys.selectedAgent) }
+        didSet { persist(selectedAgentID, forKey: Keys.selectedAgent) }
     }
 
     /// Whether active knowledge files are injected into the model's instructions.
     var injectKnowledge: Bool {
-        didSet { defaults.set(injectKnowledge, forKey: Keys.injectKnowledge) }
+        didSet { persist(injectKnowledge, forKey: Keys.injectKnowledge) }
     }
 
     /// Whether the model is given a tool to search the knowledge base on demand.
     var enableKnowledgeTool: Bool {
-        didSet { defaults.set(enableKnowledgeTool, forKey: Keys.knowledgeTool) }
+        didSet { persist(enableKnowledgeTool, forKey: Keys.knowledgeTool) }
     }
 
     /// Whether to force the model to answer in the device language.
     var forceDeviceLanguage: Bool {
-        didSet { defaults.set(forceDeviceLanguage, forKey: Keys.forceLanguage) }
+        didSet { persist(forceDeviceLanguage, forKey: Keys.forceLanguage) }
     }
 
     /// The token-sampling strategy.
     var samplingStrategy: SamplingStrategy {
-        didSet { defaults.set(samplingStrategy.rawValue, forKey: Keys.sampling) }
+        didSet { persist(samplingStrategy.rawValue, forKey: Keys.sampling) }
     }
 
     /// Number of candidate tokens for Top-K sampling.
     var topK: Int {
-        didSet { defaults.set(topK, forKey: Keys.topK) }
+        didSet { persist(topK, forKey: Keys.topK) }
     }
 
     /// Cumulative probability threshold (0...1) for nucleus sampling.
     var nucleusThreshold: Double {
-        didSet { defaults.set(nucleusThreshold, forKey: Keys.nucleus) }
+        didSet { persist(nucleusThreshold, forKey: Keys.nucleus) }
     }
 
     /// Whether to pin a random seed for more repeatable output (best-effort).
     var useSeed: Bool {
-        didSet { defaults.set(useSeed, forKey: Keys.useSeed) }
+        didSet { persist(useSeed, forKey: Keys.useSeed) }
     }
 
     /// The random seed used when `useSeed` is on.
     var seed: Int {
-        didSet { defaults.set(seed, forKey: Keys.seed) }
+        didSet { persist(seed, forKey: Keys.seed) }
     }
 
     /// Gives the model Vision's OCR tool so it can read text inside attached images.
     var enableOCRTool: Bool {
-        didSet { defaults.set(enableOCRTool, forKey: Keys.ocrTool) }
+        didSet { persist(enableOCRTool, forKey: Keys.ocrTool) }
     }
 
     /// Gives the model Vision's barcode tool so it can decode codes in attached images.
     var enableBarcodeTool: Bool {
-        didSet { defaults.set(enableBarcodeTool, forKey: Keys.barcodeTool) }
+        didSet { persist(enableBarcodeTool, forKey: Keys.barcodeTool) }
     }
 
     /// Routes requests to Apple's server-side model instead of the on-device one.
     var usePrivateCloudCompute: Bool {
-        didSet { defaults.set(usePrivateCloudCompute, forKey: Keys.pcc) }
+        didSet { persist(usePrivateCloudCompute, forKey: Keys.pcc) }
     }
 
     // MARK: - Init
+
+    /// Suppresses write-back while values are being refreshed from iCloud.
+    private var isApplyingRemoteChange = false
 
     init() {
         let d = UserDefaults.standard
@@ -150,6 +153,11 @@ final class SettingsStore {
             Keys.barcodeTool: false,
             Keys.pcc: false
         ])
+
+        // Pull any newer values from iCloud before seeding local state, so a
+        // device that's been offline adopts settings changed elsewhere.
+        CloudSettingsStore.shared.register(keys: Keys.all)
+
         self.temperature = d.double(forKey: Keys.temperature)
         self.maximumResponseTokens = d.integer(forKey: Keys.maxTokens)
         self.globalInstructions = d.string(forKey: Keys.instructions) ?? SettingsStore.defaultInstructions
@@ -165,7 +173,52 @@ final class SettingsStore {
         self.enableOCRTool = d.bool(forKey: Keys.ocrTool)
         self.enableBarcodeTool = d.bool(forKey: Keys.barcodeTool)
         self.usePrivateCloudCompute = d.bool(forKey: Keys.pcc)
+
+        NotificationCenter.default.addObserver(
+            forName: CloudSettingsStore.didChangeExternally,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.reloadFromDefaults()
+        }
     }
+
+    // MARK: - Persistence
+
+    /// Writes a value to local defaults and mirrors it to iCloud.
+    ///
+    /// Skipped while applying an incoming iCloud change, otherwise refreshing
+    /// local state would echo the same values straight back to the cloud.
+    private func persist(_ value: Any?, forKey key: String) {
+        guard !isApplyingRemoteChange else { return }
+        CloudSettingsStore.shared.set(value, forKey: key)
+    }
+
+    /// Re-reads every setting after iCloud delivers changes from another device.
+    private func reloadFromDefaults() {
+        let d = UserDefaults.standard
+        isApplyingRemoteChange = true
+        defer { isApplyingRemoteChange = false }
+
+        temperature = d.double(forKey: Keys.temperature)
+        maximumResponseTokens = d.integer(forKey: Keys.maxTokens)
+        globalInstructions = d.string(forKey: Keys.instructions) ?? SettingsStore.defaultInstructions
+        selectedAgentID = d.string(forKey: Keys.selectedAgent) ?? ""
+        injectKnowledge = d.bool(forKey: Keys.injectKnowledge)
+        enableKnowledgeTool = d.bool(forKey: Keys.knowledgeTool)
+        forceDeviceLanguage = d.bool(forKey: Keys.forceLanguage)
+        samplingStrategy = SamplingStrategy(rawValue: d.string(forKey: Keys.sampling) ?? "") ?? .automatic
+        topK = d.integer(forKey: Keys.topK)
+        nucleusThreshold = d.double(forKey: Keys.nucleus)
+        useSeed = d.bool(forKey: Keys.useSeed)
+        seed = d.integer(forKey: Keys.seed)
+        enableOCRTool = d.bool(forKey: Keys.ocrTool)
+        enableBarcodeTool = d.bool(forKey: Keys.barcodeTool)
+        usePrivateCloudCompute = d.bool(forKey: Keys.pcc)
+    }
+
+    /// Whether settings are currently mirroring to iCloud.
+    var isCloudSyncAvailable: Bool { CloudSettingsStore.shared.isAvailable }
 
     // MARK: - Proposals
 
@@ -227,5 +280,13 @@ final class SettingsStore {
         static let ocrTool = "settings.enableOCRTool"
         static let barcodeTool = "settings.enableBarcodeTool"
         static let pcc = "settings.usePrivateCloudCompute"
+
+        /// Every key mirrored to iCloud.
+        static let all: [String] = [
+            temperature, maxTokens, instructions, selectedAgent,
+            injectKnowledge, knowledgeTool, forceLanguage,
+            sampling, topK, nucleus, useSeed, seed,
+            ocrTool, barcodeTool, pcc
+        ]
     }
 }

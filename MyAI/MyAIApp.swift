@@ -7,6 +7,11 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
+
+extension Logger {
+    static let app = Logger(subsystem: "Max-Leclercq.MyAI", category: "app")
+}
 
 @main
 struct MyAIApp: App {
@@ -21,13 +26,37 @@ struct MyAIApp: App {
             Agent.self,
             Skill.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        // `.automatic` reads the app's entitlements: with the iCloud/CloudKit
+        // capability present, SwiftData syncs chats, agents, skills, and
+        // knowledge across the person's devices. Without it, everything stays
+        // local and this is a no-op.
+        let cloudConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .automatic
+        )
+
         do {
-            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [cloudConfiguration])
             SampleData.seedIfNeeded(container.mainContext)
             return container
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Never trap on a sync problem — a missing container, a signed-out
+            // iCloud account, or a schema CloudKit rejects would otherwise make
+            // the app unlaunchable. Fall back to local-only storage instead.
+            Logger.app.error("CloudKit-backed store failed, falling back to local: \(error, privacy: .public)")
+            do {
+                let localConfiguration = ModelConfiguration(
+                    schema: schema,
+                    isStoredInMemoryOnly: false,
+                    cloudKitDatabase: .none
+                )
+                let container = try ModelContainer(for: schema, configurations: [localConfiguration])
+                SampleData.seedIfNeeded(container.mainContext)
+                return container
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 
