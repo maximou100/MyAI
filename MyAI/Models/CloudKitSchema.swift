@@ -30,9 +30,21 @@ enum CloudKitSchema {
 
     static let containerIdentifier = "iCloud.Max-Leclercq.MyAI"
 
-    /// Whether the launch argument asked for a schema push.
+    /// Whether a schema push was requested.
+    ///
+    /// Accepts either form, since Xcode's scheme editor offers both and it's
+    /// easy to add one where you meant the other:
+    ///   - launch argument:      `-InitializeCloudKitSchema`
+    ///   - environment variable: `InitializeCloudKitSchema` (any value except 0/NO/false)
     static var isRequested: Bool {
-        CommandLine.arguments.contains("-InitializeCloudKitSchema")
+        if CommandLine.arguments.contains("-InitializeCloudKitSchema") {
+            return true
+        }
+        guard let value = ProcessInfo.processInfo.environment["InitializeCloudKitSchema"] else {
+            return false
+        }
+        let disabled = ["0", "no", "false"]
+        return !disabled.contains(value.lowercased())
     }
 
     /// Publishes the schema to CloudKit's development environment.
@@ -43,6 +55,19 @@ enum CloudKitSchema {
         guard isRequested else { return }
 
         let log = Logger(subsystem: "Max-Leclercq.MyAI", category: "cloudkit-schema")
+
+        // Publishing the schema talks to iCloud, so it needs a signed-in
+        // account. The Simulator usually has none — run this on a real device.
+        guard FileManager.default.ubiquityIdentityToken != nil else {
+            log.error("""
+                Schema push skipped: no iCloud account on this device. \
+                Run on a device signed in to iCloud, or sign in via \
+                Settings in the Simulator.
+                """)
+            return
+        }
+
+        log.info("Publishing CloudKit development schema for \(containerIdentifier, privacy: .public)…")
         let configuration = ModelConfiguration(schema: schema)
 
         do {
