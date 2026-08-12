@@ -154,11 +154,24 @@ cd MyAI
 open MyAI.xcodeproj
 ```
 
-1. Select **your own development team** in *Signing & Capabilities* (the repo intentionally ships with `DEVELOPMENT_TEAM` unset, so you won't inherit anyone else's).
-2. Choose an Apple Intelligence–capable device.
-3. Build and run (⌘R).
+**1. Set your signing team.** No Team ID is stored in this repo. Supply your own via a gitignored config file:
 
-> Xcode writes your team ID back into `project.pbxproj` when you select it. That shows up as a local modification — just don't commit it.
+```bash
+cp Config/Local.xcconfig.template Config/Local.xcconfig
+# then edit it and set your own Team ID
+```
+
+`Config/Signing.xcconfig` is the project's base configuration and pulls your file in with an optional `#include?`, so a clone without it still builds cleanly.
+
+**2. Enable the safety hook** (recommended — Xcode silently rewrites `DEVELOPMENT_TEAM` into `project.pbxproj` whenever it repairs automatic signing):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This blocks any commit that would leak a Team ID.
+
+**3. Choose an Apple Intelligence–capable device and run** (⌘R).
 
 On first launch the app seeds two agents, two skills, and two knowledge files so every feature is immediately explorable.
 

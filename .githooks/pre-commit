@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Blocks accidentally committing a personal Apple Developer Team ID.
+#
+# Xcode silently writes DEVELOPMENT_TEAM back into project.pbxproj whenever it
+# repairs automatic signing, so relying on discipline alone is not enough.
+# Team IDs belong in Config/Local.xcconfig, which is gitignored.
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+
+fail=0
+
+# 1) Any non-empty DEVELOPMENT_TEAM being introduced into a staged file.
+#    Markdown is excluded so documentation can describe the setting safely.
+offenders=$(git diff --cached -U0 --name-only -G'DEVELOPMENT_TEAM = [A-Z0-9]{10}' \
+            -- . ':(exclude)*.md')
+if [ -n "$offenders" ]; then
+    echo "✖ Commit blocked: a DEVELOPMENT_TEAM value is staged."
+    echo ""
+    echo "$offenders" | sed 's/^/    /'
+    echo ""
+    echo "  Xcode probably rewrote project.pbxproj. Remove it with:"
+    echo "    sed -i '' '/DEVELOPMENT_TEAM = [A-Z0-9]\\{10\\};/d' MyAI.xcodeproj/project.pbxproj"
+    echo "  Your Team ID belongs in Config/Local.xcconfig (gitignored)."
+    fail=1
+fi
+
+# 2) The local signing config itself must never be tracked.
+if git diff --cached --name-only | grep -qx 'Config/Local.xcconfig'; then
+    echo "✖ Commit blocked: Config/Local.xcconfig is staged and must stay local."
+    echo "    git rm --cached Config/Local.xcconfig"
+    fail=1
+fi
+
+exit $fail

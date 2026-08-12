@@ -1,0 +1,11 @@
+// Local.xcconfig.template
+//
+// Copy this file to Config/Local.xcconfig and fill in your own Team ID:
+//
+//   cp Config/Local.xcconfig.template Config/Local.xcconfig
+//
+// Config/Local.xcconfig is gitignored, so your Team ID never reaches the
+// repository. Find your Team ID in the Apple Developer portal under
+// Membership, or in Xcode under Settings > Accounts.
+
+DEVELOPMENT_TEAM =

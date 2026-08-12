@@ -27,6 +27,7 @@
 		853D2AC8302ADFB700CE89AC /* MyAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		853D2AD7302ADFB800CE89AC /* MyAITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyAITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		853D2AE1302ADFB800CE89AC /* MyAIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyAIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA11BB22CC33DD44EE550001 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,9 +73,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA11BB22CC33DD44EE550002 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE550001 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		853D2ABF302ADFB700CE89AC = {
 			isa = PBXGroup;
 			children = (
+				AA11BB22CC33DD44EE550002 /* Config */,
 				853D2ACA302ADFB700CE89AC /* MyAI */,
 				853D2ADA302ADFB800CE89AC /* MyAITests */,
 				853D2AE4302ADFB800CE89AC /* MyAIUITests */,
@@ -271,6 +281,7 @@
 /* Begin XCBuildConfiguration section */
 		853D2AE9302ADFB800CE89AC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA11BB22CC33DD44EE550001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -335,6 +346,7 @@
 		};
 		853D2AEA302ADFB800CE89AC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA11BB22CC33DD44EE550001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -414,6 +426,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "Max-Leclercq.MyAI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -447,6 +463,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "Max-Leclercq.MyAI";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -1,0 +1,15 @@
+// Signing.xcconfig
+//
+// Shared, committed signing configuration.
+//
+// Your personal Apple Developer Team ID must NEVER be committed. Instead it
+// lives in Config/Local.xcconfig, which is gitignored and optionally included
+// below. The "#include?" form silently does nothing when the file is absent,
+// so a fresh clone builds without warnings and each developer supplies their
+// own team.
+//
+// Setup:
+//   cp Config/Local.xcconfig.template Config/Local.xcconfig
+//   # then edit it and set DEVELOPMENT_TEAM to your own Team ID
+
+#include? "Local.xcconfig"
