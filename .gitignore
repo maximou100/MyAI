@@ -47,3 +47,5 @@ fastlane/test_output
 # Accio / misc
 Dependencies/
 .netrc
+# Verification screenshots — large simulator captures, kept locally only.
+Screenshots/
