@@ -50,6 +50,9 @@ struct SkillsView: View {
                             }
                         }
                     }
+                    // Without this the button tints its whole label blue,
+                    // flattening the title/summary hierarchy.
+                    .buttonStyle(.plain)
                     Spacer()
                     Toggle("", isOn: enabledBinding(for: skill))
                         .labelsHidden()

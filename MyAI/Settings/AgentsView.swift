@@ -99,6 +99,8 @@ struct AgentsView: View {
                 }
             }
         }
+        // Keep the title/summary hierarchy instead of tinting the row blue.
+        .buttonStyle(.plain)
         .swipeActions(edge: .leading) {
             Button {
                 settings.selectedAgentID = isActive ? "" : agent.id.uuidString

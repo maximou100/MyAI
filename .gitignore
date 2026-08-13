@@ -47,5 +47,7 @@ fastlane/test_output
 # Accio / misc
 Dependencies/
 .netrc
-# Verification screenshots — large simulator captures, kept locally only.
-Screenshots/
+# Raw verification captures stay local; the curated App Store set is tracked
+# because the originals live in a temp dir macOS purges.
+Screenshots/*
+!Screenshots/AppStore/

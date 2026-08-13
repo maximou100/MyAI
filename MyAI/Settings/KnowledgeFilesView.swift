@@ -46,6 +46,8 @@ struct KnowledgeFilesView: View {
                         }
                     }
                 }
+                // Preserve the title/preview hierarchy inside the button.
+                .buttonStyle(.plain)
                 .swipeActions(edge: .leading) {
                     Button {
                         file.isActive.toggle()

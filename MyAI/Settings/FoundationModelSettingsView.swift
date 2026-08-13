@@ -46,6 +46,8 @@ struct FoundationModelSettingsView: View {
                             }
                         }
                     }
+                    // Preserve the title/detail hierarchy inside the button.
+                    .buttonStyle(.plain)
                 }
             } header: {
                 Text("Proposals")
