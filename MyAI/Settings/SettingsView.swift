@@ -28,7 +28,7 @@ struct SettingsView: View {
                     NavigationLink {
                         FoundationModelSettingsView()
                     } label: {
-                        Label("Apple Foundation Model", systemImage: "apple.logo")
+                        Label("Foundation Model", systemImage: "apple.logo")
                     }
                 }
 

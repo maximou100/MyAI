@@ -132,8 +132,7 @@ struct FoundationModelSettingsView: View {
 
             Section {
                 LabeledContent("Runs on", value: engine.computeDescription)
-                LabeledContent("Context window",
-                               value: engine.contextWindowSize.map { "\($0) tokens" } ?? "4096 tokens")
+                LabeledContent("Context window", value: engine.contextWindowDescription)
             } header: {
                 Text("Hardware & Memory")
             } footer: {

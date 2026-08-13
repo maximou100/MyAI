@@ -279,9 +279,21 @@ final class LLMEngine {
     // MARK: - Hardware & memory (read-only, system-managed)
 
     /// The maximum context window (in tokens) for a single session.
+    ///
+    /// Returns nil when the size can't be determined — the model reports 0 when
+    /// its assets aren't present, which would otherwise surface as "0 tokens".
     var contextWindowSize: Int? {
         guard isAvailable else { return nil }
-        return model.contextSize
+        let size = model.contextSize
+        return size > 0 ? size : nil
+    }
+
+    /// The context window formatted for display, falling back to the documented
+    /// on-device window when the live value isn't reportable.
+    var contextWindowDescription: String {
+        let tokens = contextWindowSize ?? 4096
+        let formatted = tokens.formatted(.number.grouping(.automatic))
+        return "\(formatted) tokens"
     }
 
     /// FoundationModels does not expose a compute-unit selector; the OS decides.
